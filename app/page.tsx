@@ -1,5 +1,6 @@
 "use client";
-import { Plus } from "lucide-react";
+import { unitService } from "@/service/unitService";
+import { Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
 
 type UnitType = "capsule" | "cabin";
@@ -15,16 +16,19 @@ type UnitData = {
 
 export default function Home() {
   const [units, setUnits] = useState<UnitData[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    fetch(`${apiUrl}/units`)
-      .then((res) => res.json())
-      .then((units) => {
-        console.log("Data mentah dari API:", units);
+    const fetchUnits = async () => {
+      try {
+        const units = await unitService.getAllUnits();
         setUnits(units.data);
-      });
+      } catch (error) {
+        console.error("Failed to get data:", error);
+      }
+    };
+
+    fetchUnits();
   }, []);
 
   const statusLabels: Record<UnitStatus, string> = {
@@ -64,7 +68,10 @@ export default function Home() {
       <header className=" py-2.5 px-5 flex justify-between items-center">
         <h1 className="text-2xl font-mono">Unit Management Dashboard</h1>
 
-        <button className="flex items-center gap-1 border border-black/30 py-1 px-3 text-base rounded-full cursor-pointer">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-1 border border-black/30 py-1 px-3 text-base rounded-full cursor-pointer"
+        >
           <Plus size={16} />
           Add
         </button>
@@ -83,7 +90,7 @@ export default function Home() {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-100 text-gray-700">
+            <tbody className="divide-y divide-gray-100 text-gray-700 cursor-pointer">
               {units.map((unit) => (
                 <tr
                   key={unit.id}
@@ -114,6 +121,55 @@ export default function Home() {
             </tbody>
           </table>
         </div>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+            {/* Backdrop (Background Blur) */}
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+              onClick={() => setIsModalOpen(false)}
+            />
+
+            {/* Modal Box */}
+            <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in zoom-in duration-200">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold">Add New Unit</h2>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-400 hover:text-black"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Form Dummy */}
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold uppercase text-gray-400">
+                    Unit Name
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border-b border-gray-200 py-2 focus:border-black outline-none transition-colors"
+                    placeholder="e.g. Capsule-B03"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold uppercase text-gray-400">
+                    Type
+                  </label>
+                  <select className="w-full border-b border-gray-200 py-2 focus:border-black outline-none bg-transparent cursor-pointer">
+                    <option>Capsule</option>
+                    <option>Cabin</option>
+                  </select>
+                </div>
+                <button className="w-full bg-black text-white py-3 rounded-xl font-medium mt-6 hover:bg-gray-800 transition-colors">
+                  Save Unit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <footer></footer>
