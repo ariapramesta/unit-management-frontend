@@ -1,47 +1,53 @@
+"use client";
 import { Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+
+type UnitType = "capsule" | "cabin";
+
+type UnitStatus = "available" | "occupied" | "cleaning" | "maintenance";
+
+type UnitData = {
+  id: string;
+  name: string;
+  type: UnitType;
+  status: UnitStatus;
+};
 
 export default function Home() {
-  type UnitData = {
-    id: string;
-    name: string;
-    type: UnitType;
-    status: UnitStatus;
+  const [units, setUnits] = useState<UnitData[]>([]);
+
+  useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    fetch(`${apiUrl}/units`)
+      .then((res) => res.json())
+      .then((units) => {
+        console.log("Data mentah dari API:", units);
+        setUnits(units.data);
+      });
+  }, []);
+
+  const statusLabels: Record<UnitStatus, string> = {
+    available: "Available",
+    occupied: "Occupied",
+    cleaning: "Cleaning In Progress",
+    maintenance: "Maintenance Needed",
   };
 
-  type UnitType = "Capsule" | "Cabin";
-
-  type UnitStatus =
-    | "Available"
-    | "Occupied"
-    | "Cleaning In Progress"
-    | "Maintenance Needed";
-
-  const units: UnitData[] = [
-    { id: "room-1", name: "Capsule-A01", type: "Capsule", status: "Available" },
-    { id: "room-2", name: "Capsule-A02", type: "Capsule", status: "Occupied" },
-    {
-      id: "room-3",
-      name: "Forest-Cabin-1",
-      type: "Cabin",
-      status: "Cleaning In Progress",
-    },
-    {
-      id: "room-4",
-      name: "Forest-Cabin-2",
-      type: "Cabin",
-      status: "Maintenance Needed",
-    },
-  ];
+  const typeLabels: Record<UnitType, string> = {
+    capsule: "Capsule",
+    cabin: "Cabin",
+  };
 
   const getStatusDotColor = (status: UnitStatus) => {
     switch (status) {
-      case "Available":
+      case "available":
         return "bg-emerald-500";
-      case "Occupied":
+      case "occupied":
         return "bg-blue-500";
-      case "Cleaning In Progress":
+      case "cleaning":
         return "bg-amber-500";
-      case "Maintenance Needed":
+      case "maintenance":
         return "bg-rose-500";
       default:
         return "bg-gray-500";
@@ -49,7 +55,7 @@ export default function Home() {
   };
 
   const getTypeStyle = (type: UnitType) => {
-    if (type === "Capsule") return "text-cyan-700";
+    if (type === "capsule") return "text-cyan-700";
     return "text-green-800";
   };
 
@@ -90,7 +96,7 @@ export default function Home() {
                   <td
                     className={`text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-tighter ${getTypeStyle(unit.type)}`}
                   >
-                    {unit.type}
+                    {typeLabels[unit.type]}
                   </td>
 
                   <td className="py-4 px-4">
@@ -99,7 +105,7 @@ export default function Home() {
                         className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(unit.status)}`}
                       ></span>
                       <span className="text-xs font-medium text-gray-800">
-                        {unit.status}
+                        {statusLabels[unit.status]}
                       </span>
                     </div>
                   </td>
