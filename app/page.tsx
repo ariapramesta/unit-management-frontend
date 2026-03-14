@@ -1,65 +1,130 @@
-import Image from "next/image";
+"use client";
+import { unitService } from "@/service/unitService";
+import { Check, ChevronDown, Filter, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import CreateUnitModal from "@/components/CreateUnitModal";
+import { UnitData, UnitStatus } from "@/types/unit";
+import UnitDetailModal from "@/components/UnitDetailModal";
+import DashboardHeader from "@/components/DashboardHeader";
+import UnitTable from "@/components/UnitTable";
 
 export default function Home() {
+  const [units, setUnits] = useState<UnitData[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+  const [selectedUnit, setSelectedUnit] = useState<UnitData | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const fetchUnits = async (currentStatus: string) => {
+    try {
+      const queryParam = currentStatus === "all" ? undefined : currentStatus;
+      const response: any = await unitService.getAllUnits(queryParam);
+
+      const finalData = Array.isArray(response) ? response : response.data;
+      if (Array.isArray(finalData)) {
+        setUnits(finalData);
+      } else {
+        console.error("Data not an array:", finalData);
+        setUnits([]);
+      }
+    } catch (error) {
+      console.error("Failed to get data:", error);
+      setUnits([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnits(statusFilter);
+  }, [statusFilter]);
+
+  const handleSuccess = () => {
+    fetchUnits(statusFilter);
+  };
+
+  const handleRowClick = (unit: UnitData) => {
+    setSelectedUnit(unit);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleDeleteClick = async (id: string) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this unit?",
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await unitService.deleteUnit(id);
+      setIsDetailModalOpen(false);
+      fetchUnits(statusFilter);
+      alert("Unit deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete unit:", error);
+      alert("Error deleting unit. Please try again.");
+    }
+  };
+
+  const handleStatusUpdate = async (
+    e: React.MouseEvent,
+    id: string,
+    newStatus: UnitStatus,
+  ) => {
+    e.stopPropagation();
+    try {
+      await unitService.updateUnitStatus(id, newStatus);
+      setOpenDropdownId(null);
+      fetchUnits(statusFilter);
+    } catch (error) {
+      alert("Failed to update status");
+    }
+  };
+
+  const displayUnits = units.filter((unit) => {
+    if (typeFilter === "all") return true;
+    return unit.type === typeFilter;
+  });
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <section className="bg-secondary text-primary min-h-screen">
+      <DashboardHeader
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        onAddClick={() => setIsModalOpen(true)}
+      />
+
+      <div className="separator" />
+
+      <main className="px-4 sm:px-10 lg:px-32 py-6 md:py-10 pb-40">
+        <UnitTable
+          units={displayUnits}
+          onRowClick={(unit) => {
+            setSelectedUnit(unit);
+            setIsDetailModalOpen(true);
+          }}
+          openDropdownId={openDropdownId}
+          setOpenDropdownId={setOpenDropdownId}
+          onStatusUpdate={handleStatusUpdate}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        <p className="mt-4 text-center text-xs text-gray-400 block md:hidden">
+          ← Scroll horizontal to see detail →
+        </p>
+
+        <CreateUnitModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={handleSuccess}
+        />
+        <UnitDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          unit={selectedUnit}
+          onDelete={handleDeleteClick}
+        />
       </main>
-    </div>
+    </section>
   );
 }
