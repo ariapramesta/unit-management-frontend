@@ -11,4 +11,8 @@ export const unitService = {
     const response = await api.post<UnitData>("/units", data);
     return response.data;
   },
+
+  deleteUnit: async (id: string): Promise<void> => {
+    await api.delete(`/units/${id}`);
+  },
 };

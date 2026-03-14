@@ -25,3 +25,8 @@ export const STATUS_HOVER_BORDERS: Record<UnitStatus, string> = {
   cleaning: "hover:border-amber-500",
   maintenance: "hover:border-rose-500",
 };
+
+export const TYPE_STYLES: Record<UnitType, string> = {
+  capsule: "text-cyan-700",
+  cabin: "text-green-800",
+};

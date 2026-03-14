@@ -3,17 +3,21 @@ import { unitService } from "@/service/unitService";
 import { Pencil, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import CreateUnitModal from "@/components/CreateUnitModal";
-import { UnitData, UnitStatus, UnitType } from "@/types/unit";
+import { UnitData } from "@/types/unit";
 import {
   STATUS_DOT_COLORS,
   STATUS_HOVER_BORDERS,
   STATUS_LABELS,
   TYPE_LABELS,
+  TYPE_STYLES,
 } from "@/constants/unit";
+import UnitDetailModal from "@/components/UnitDetailModal";
 
 export default function Home() {
   const [units, setUnits] = useState<UnitData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState<UnitData | null>(null);
 
   const fetchUnits = async () => {
     try {
@@ -40,9 +44,29 @@ export default function Home() {
     fetchUnits();
   };
 
-  const getTypeStyle = (type: UnitType) => {
-    if (type === "capsule") return "text-cyan-700";
-    return "text-green-800";
+  const handleRowClick = (unit: UnitData) => {
+    setSelectedUnit(unit);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleDeleteClick = async (id: string) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this unit?",
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await unitService.deleteUnit(id);
+
+      setIsDetailModalOpen(false);
+
+      fetchUnits();
+
+      alert("Unit deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete unit:", error);
+      alert("Error deleting unit. Please try again.");
+    }
   };
 
   return (
@@ -78,13 +102,14 @@ export default function Home() {
                   <tr
                     key={unit.id}
                     className="hover:bg-gray-50/50 transition-colors group"
+                    onClick={() => handleRowClick(unit)}
                   >
                     <td className="py-4 px-4 font-medium text-gray-900">
                       {unit.name}
                     </td>
 
                     <td
-                      className={`text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-tighter ${getTypeStyle(unit.type)}`}
+                      className={`text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-tighter ${TYPE_STYLES[unit.type]}`}
                     >
                       {TYPE_LABELS[unit.type]}
                     </td>
@@ -124,6 +149,12 @@ export default function Home() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSuccess={handleSuccess}
+        />
+        <UnitDetailModal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          unit={selectedUnit}
+          onDelete={handleDeleteClick}
         />
       </main>
 
