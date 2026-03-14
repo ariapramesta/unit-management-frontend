@@ -2,8 +2,9 @@ import { CreateUnitPayload, UnitData, UnitStatus } from "@/types/unit";
 import api from "./api";
 
 export const unitService = {
-  getAllUnits: async (): Promise<UnitData[]> => {
-    const response = await api.get<UnitData[]>("/units");
+  getAllUnits: async (status?: string): Promise<UnitData[]> => {
+    const params = status ? { status } : {};
+    const response = await api.get<UnitData[]>("/units", { params });
     return response.data;
   },
 

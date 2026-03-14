@@ -1,6 +1,6 @@
 "use client";
 import { unitService } from "@/service/unitService";
-import { Check, ChevronDown, Plus } from "lucide-react";
+import { Check, ChevronDown, Filter, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { UnitData, UnitStatus } from "@/types/unit";
@@ -16,14 +16,18 @@ import UnitDetailModal from "@/components/UnitDetailModal";
 
 export default function Home() {
   const [units, setUnits] = useState<UnitData[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [selectedUnit, setSelectedUnit] = useState<UnitData | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const fetchUnits = async () => {
+  const fetchUnits = async (currentStatus: string) => {
     try {
-      const response: any = await unitService.getAllUnits();
+      const queryParam = currentStatus === "all" ? undefined : currentStatus;
+      const response: any = await unitService.getAllUnits(queryParam);
+
       const finalData = Array.isArray(response) ? response : response.data;
       if (Array.isArray(finalData)) {
         setUnits(finalData);
@@ -38,11 +42,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchUnits();
-  }, []);
+    fetchUnits(statusFilter);
+  }, [statusFilter]);
 
   const handleSuccess = () => {
-    fetchUnits();
+    fetchUnits(statusFilter);
   };
 
   const handleRowClick = (unit: UnitData) => {
@@ -59,7 +63,7 @@ export default function Home() {
     try {
       await unitService.deleteUnit(id);
       setIsDetailModalOpen(false);
-      fetchUnits();
+      fetchUnits(statusFilter);
       alert("Unit deleted successfully");
     } catch (error) {
       console.error("Failed to delete unit:", error);
@@ -76,11 +80,16 @@ export default function Home() {
     try {
       await unitService.updateUnitStatus(id, newStatus);
       setOpenDropdownId(null);
-      fetchUnits();
+      fetchUnits(statusFilter);
     } catch (error) {
       alert("Failed to update status");
     }
   };
+
+  const displayUnits = units.filter((unit) => {
+    if (typeFilter === "all") return true;
+    return unit.type === typeFilter;
+  });
 
   return (
     <section className="bg-secondary text-primary min-h-screen">
@@ -90,6 +99,46 @@ export default function Home() {
         </h1>
 
         <div className="flex gap-4">
+          <div className="relative flex items-center">
+            <Filter size={14} className="absolute left-2.5 " />
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="appearance-none pl-8 pr-8 py-1.5 border border-black/20 rounded-lg text-sm bg-white cursor-pointer hover:border-black/50 transition-all focus:outline-none focus:ring-2 focus:ring-black/5"
+            >
+              <option value="all">All Types</option>
+              {Object.keys(TYPE_LABELS).map((typeKey) => (
+                <option key={typeKey} value={typeKey}>
+                  {TYPE_LABELS[typeKey as keyof typeof TYPE_LABELS]}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={14}
+              className="absolute right-2.5 text-gray-500 pointer-events-none"
+            />
+          </div>
+
+          <div className="relative flex items-center">
+            <Filter size={14} className="absolute left-2.5 " />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="appearance-none pl-8 pr-8 py-1.5 border border-black/20 rounded-lg text-sm bg-white cursor-pointer hover:border-black/50 transition-all focus:outline-none focus:ring-2 focus:ring-black/5"
+            >
+              <option value="all">All Statuses</option>
+              {ALL_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {STATUS_LABELS[status]}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={14}
+              className="absolute right-2.5 text-gray-500 pointer-events-none"
+            />
+          </div>
+
           <button
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-1 border border-black/30 py-1 px-3 text-sm md:text-base rounded-lg cursor-pointer hover:border-black transition-all shrink-0"
@@ -113,10 +162,10 @@ export default function Home() {
             </thead>
 
             <tbody className="divide-y divide-gray-100 text-gray-700">
-              {units && units.length > 0 ? (
-                units.map((unit, index) => {
+              {displayUnits && displayUnits.length > 0 ? (
+                displayUnits.map((unit, index) => {
                   const isLastRows =
-                    index >= units.length - 3 && units.length > 3;
+                    index >= displayUnits.length - 3 && displayUnits.length > 3;
 
                   return (
                     <tr
