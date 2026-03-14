@@ -13,6 +13,8 @@ import {
   TYPE_STYLES,
 } from "@/constants/unit";
 import UnitDetailModal from "@/components/UnitDetailModal";
+import DashboardHeader from "@/components/DashboardHeader";
+import UnitTable from "@/components/UnitTable";
 
 export default function Home() {
   const [units, setUnits] = useState<UnitData[]>([]);
@@ -93,178 +95,27 @@ export default function Home() {
 
   return (
     <section className="bg-secondary text-primary min-h-screen">
-      <header className="py-2.5 px-4 md:px-5 flex justify-between items-center bg-white/50 backdrop-blur-sm sticky top-0 z-10">
-        <h1 className="text-lg md:text-2xl font-mono truncate mr-2">
-          Unit Management Dashboard
-        </h1>
-
-        <div className="flex gap-4">
-          <div className="relative flex items-center">
-            <Filter size={14} className="absolute left-2.5 " />
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="appearance-none pl-8 pr-8 py-1.5 border border-black/20 rounded-lg text-sm bg-white cursor-pointer hover:border-black/50 transition-all focus:outline-none focus:ring-2 focus:ring-black/5"
-            >
-              <option value="all">All Types</option>
-              {Object.keys(TYPE_LABELS).map((typeKey) => (
-                <option key={typeKey} value={typeKey}>
-                  {TYPE_LABELS[typeKey as keyof typeof TYPE_LABELS]}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={14}
-              className="absolute right-2.5 text-gray-500 pointer-events-none"
-            />
-          </div>
-
-          <div className="relative flex items-center">
-            <Filter size={14} className="absolute left-2.5 " />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="appearance-none pl-8 pr-8 py-1.5 border border-black/20 rounded-lg text-sm bg-white cursor-pointer hover:border-black/50 transition-all focus:outline-none focus:ring-2 focus:ring-black/5"
-            >
-              <option value="all">All Statuses</option>
-              {ALL_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {STATUS_LABELS[status]}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={14}
-              className="absolute right-2.5 text-gray-500 pointer-events-none"
-            />
-          </div>
-
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-1 border border-black/30 py-1 px-3 text-sm md:text-base rounded-lg cursor-pointer hover:border-black transition-all shrink-0"
-          >
-            <Plus size={16} />
-            <span>Add</span>
-          </button>
-        </div>
-      </header>
+      <DashboardHeader
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        onAddClick={() => setIsModalOpen(true)}
+      />
 
       <div className="separator" />
+
       <main className="px-4 sm:px-10 lg:px-32 py-6 md:py-10 pb-40">
-        <div className="w-full overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
-          <table className="w-full min-w-150 text-sm text-left">
-            <thead className="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50/50">
-              <tr>
-                <th className="py-4 px-4 md:px-6 font-medium">Name</th>
-                <th className="py-4 px-4 md:px-6 font-medium">Type</th>
-                <th className="py-4 px-4 md:px-6 font-medium">Status</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-gray-100 text-gray-700">
-              {displayUnits && displayUnits.length > 0 ? (
-                displayUnits.map((unit, index) => {
-                  const isLastRows =
-                    index >= displayUnits.length - 3 && displayUnits.length > 3;
-
-                  return (
-                    <tr
-                      key={unit.id}
-                      className="hover:bg-gray-50/50 transition-colors group cursor-pointer"
-                      onClick={() => handleRowClick(unit)}
-                    >
-                      <td className="py-4 px-4 md:px-6 font-medium text-gray-900">
-                        {unit.name}
-                      </td>
-
-                      <td className="py-4 px-4 md:px-6">
-                        <span
-                          className={`text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-tighter ${TYPE_STYLES[unit.type]}`}
-                        >
-                          {TYPE_LABELS[unit.type]}
-                        </span>
-                      </td>
-
-                      <td className="py-4 px-4 md:px-6">
-                        <div className="relative inline-block text-left">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenDropdownId(
-                                openDropdownId === unit.id ? null : unit.id,
-                              );
-                            }}
-                            className={`group/status inline-flex items-center gap-2 border border-gray-200 ${STATUS_HOVER_BORDERS[unit.status]} px-2.5 py-1 rounded-full bg-white transition-all duration-200 hover:shadow-sm`}
-                          >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT_COLORS[unit.status]}`}
-                            />
-                            <span className="text-xs font-medium text-gray-800 whitespace-nowrap">
-                              {STATUS_LABELS[unit.status]}
-                            </span>
-                            <ChevronDown
-                              size={12}
-                              className={`text-gray-400 transition-transform ${openDropdownId === unit.id ? "rotate-180" : ""}`}
-                            />
-                          </button>
-
-                          {openDropdownId === unit.id && (
-                            <>
-                              <div
-                                className="fixed inset-0 z-10"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenDropdownId(null);
-                                }}
-                              />
-
-                              <div
-                                className={`absolute left-0 w-48 rounded-xl bg-white shadow-xl border border-gray-100 z-20 py-1 overflow-hidden animate-in fade-in zoom-in duration-150 
-                                ${isLastRows ? "bottom-full mb-2" : "mt-2"}`}
-                              >
-                                {ALL_STATUSES.map((status) => {
-                                  const isActive = unit.status === status;
-                                  return (
-                                    <button
-                                      key={status}
-                                      onClick={(e) =>
-                                        handleStatusUpdate(e, unit.id, status)
-                                      }
-                                      className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium transition-colors ${isActive ? "bg-gray-50 text-black" : "text-gray-600 hover:bg-gray-50 hover:text-black"}`}
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <span
-                                          className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[status]}`}
-                                        />
-                                        {STATUS_LABELS[status]}
-                                      </div>
-                                      {isActive && (
-                                        <Check
-                                          size={14}
-                                          className="text-emerald-500"
-                                        />
-                                      )}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan={3} className="py-20 text-center text-gray-400">
-                    <p>No units available.</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <UnitTable
+          units={displayUnits}
+          onRowClick={(unit) => {
+            setSelectedUnit(unit);
+            setIsDetailModalOpen(true);
+          }}
+          openDropdownId={openDropdownId}
+          setOpenDropdownId={setOpenDropdownId}
+          onStatusUpdate={handleStatusUpdate}
+        />
 
         <p className="mt-4 text-center text-xs text-gray-400 block md:hidden">
           ← Scroll horizontal to see detail →

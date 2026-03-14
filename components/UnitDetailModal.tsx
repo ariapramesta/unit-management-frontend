@@ -29,7 +29,7 @@ export default function UnitDetailModal({
         onClick={onClose}
       />
 
-      <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Unit Detail</h2>
