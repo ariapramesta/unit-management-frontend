@@ -1,4 +1,5 @@
-import { CreateUnitPayload, unitService } from "@/service/unitService";
+import { unitService } from "@/service/unitService";
+import { CreateUnitPayload } from "@/types/unit";
 import { X } from "lucide-react";
 import React, { useState } from "react";
 

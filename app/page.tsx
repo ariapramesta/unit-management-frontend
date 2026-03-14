@@ -1,15 +1,15 @@
 "use client";
-import { unitService, UnitStatus, UnitType } from "@/service/unitService";
-import { Plus, X } from "lucide-react";
+import { unitService } from "@/service/unitService";
+import { Pencil, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import CreateUnitModal from "@/components/CreateUnitModal";
-
-type UnitData = {
-  id: string;
-  name: string;
-  type: UnitType;
-  status: UnitStatus;
-};
+import { UnitData, UnitStatus, UnitType } from "@/types/unit";
+import {
+  STATUS_DOT_COLORS,
+  STATUS_HOVER_BORDERS,
+  STATUS_LABELS,
+  TYPE_LABELS,
+} from "@/constants/unit";
 
 export default function Home() {
   const [units, setUnits] = useState<UnitData[]>([]);
@@ -23,8 +23,8 @@ export default function Home() {
       if (Array.isArray(finalData)) {
         setUnits(finalData);
       } else {
-        console.error("Data yang diterima bukan array:", finalData);
-        setUnits([]); // Set ke array kosong agar .map tidak crash
+        console.error("Data not an array:", finalData);
+        setUnits([]);
       }
     } catch (error) {
       console.error("Failed to get data:", error);
@@ -38,48 +38,6 @@ export default function Home() {
 
   const handleSuccess = () => {
     fetchUnits();
-  };
-
-  const statusLabels: Record<UnitStatus, string> = {
-    available: "Available",
-    occupied: "Occupied",
-    cleaning: "Cleaning In Progress",
-    maintenance: "Maintenance Needed",
-  };
-
-  const typeLabels: Record<UnitType, string> = {
-    capsule: "Capsule",
-    cabin: "Cabin",
-  };
-
-  const getStatusDotColor = (status: UnitStatus) => {
-    switch (status) {
-      case "available":
-        return "bg-emerald-500";
-      case "occupied":
-        return "bg-blue-500";
-      case "cleaning":
-        return "bg-amber-500";
-      case "maintenance":
-        return "bg-rose-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  const getStatusBorderHoverColor = (status: UnitStatus) => {
-    switch (status) {
-      case "available":
-        return "hover:border-emerald-500";
-      case "occupied":
-        return "hover:border-blue-500";
-      case "cleaning":
-        return "hover:border-amber-500";
-      case "maintenance":
-        return "hover:border-rose-500";
-      default:
-        return "hover:border-gray-500";
-    }
   };
 
   const getTypeStyle = (type: UnitType) => {
@@ -128,19 +86,25 @@ export default function Home() {
                     <td
                       className={`text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-tighter ${getTypeStyle(unit.type)}`}
                     >
-                      {typeLabels[unit.type]}
+                      {TYPE_LABELS[unit.type]}
                     </td>
 
                     <td className="py-4 px-4">
                       <div
-                        className={`inline-flex items-center gap-2 border border-gray-200 ${getStatusBorderHoverColor(unit.status)} px-2.5 py-1 rounded-full bg-white`}
+                        className={`group/status inline-flex items-center gap-2 border border-gray-200 ${STATUS_HOVER_BORDERS[unit.status]} px-2.5 py-1 rounded-full bg-white transition-all duration-200 cursor-pointer`}
                       >
                         <span
-                          className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(unit.status)}`}
+                          className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT_COLORS[unit.status]}`}
                         ></span>
+
                         <span className="text-xs font-medium text-gray-800">
-                          {statusLabels[unit.status]}
+                          {STATUS_LABELS[unit.status]}
                         </span>
+
+                        <Pencil
+                          size={12}
+                          className="opacity-0 group-hover/status:opacity-100 group-hover/status:ml-1 transition-all duration-200 text-gray-400"
+                        />
                       </div>
                     </td>
                   </tr>
