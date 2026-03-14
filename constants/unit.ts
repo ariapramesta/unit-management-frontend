@@ -37,3 +37,10 @@ export const ALL_STATUSES: UnitStatus[] = [
   "cleaning",
   "maintenance",
 ];
+
+export const allowedTransitions: Record<UnitStatus, UnitStatus[]> = {
+  available: ["occupied", "maintenance"],
+  occupied: ["cleaning", "maintenance"],
+  cleaning: ["available", "maintenance"],
+  maintenance: ["available", "cleaning"],
+};

@@ -4,14 +4,6 @@ import { Check, ChevronDown, Filter, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { UnitData, UnitStatus } from "@/types/unit";
-import {
-  ALL_STATUSES,
-  STATUS_DOT_COLORS,
-  STATUS_HOVER_BORDERS,
-  STATUS_LABELS,
-  TYPE_LABELS,
-  TYPE_STYLES,
-} from "@/constants/unit";
 import UnitDetailModal from "@/components/UnitDetailModal";
 import DashboardHeader from "@/components/DashboardHeader";
 import UnitTable from "@/components/UnitTable";

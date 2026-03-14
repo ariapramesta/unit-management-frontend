@@ -1,5 +1,6 @@
 import {
   ALL_STATUSES,
+  allowedTransitions,
   STATUS_DOT_COLORS,
   STATUS_HOVER_BORDERS,
   STATUS_LABELS,
@@ -101,13 +102,19 @@ const UnitTable = ({
                           >
                             {ALL_STATUSES.map((status) => {
                               const isActive = unit.status === status;
+                              const isDisabled =
+                                isActive ||
+                                !allowedTransitions[unit.status].includes(
+                                  status,
+                                );
                               return (
                                 <button
                                   key={status}
+                                  disabled={isDisabled}
                                   onClick={(e) =>
                                     onStatusUpdate(e, unit.id, status)
                                   }
-                                  className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium transition-colors ${isActive ? "bg-gray-50 text-black" : "text-gray-600 hover:bg-gray-50 hover:text-black"}`}
+                                  className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium transition-colors ${isActive ? "bg-gray-50 text-black" : "text-gray-800 hover:bg-gray-50 hover:text-black"} disabled:text-gray-400 disabled:bg-transparent`}
                                 >
                                   <div className="flex items-center gap-2">
                                     <span
