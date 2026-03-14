@@ -26,8 +26,7 @@ const DashboardHeader = ({
       {/* Controls Section */}
       <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 md:gap-4 w-full md:w-auto">
         {/* Type Filter */}
-        <div className="relative flex items-center flex-1 sm:flex-none min-w-[130px]">
-          {/* pointer-events-none ditambahkan agar klik tembus ke elemen select */}
+        <div className="relative flex items-center flex-1 sm:flex-none min-w-32.5">
           <Filter
             size={14}
             className="absolute left-2.5 text-gray-500 pointer-events-none"
@@ -51,7 +50,7 @@ const DashboardHeader = ({
         </div>
 
         {/* Status Filter */}
-        <div className="relative flex items-center flex-1 sm:flex-none min-w-[130px]">
+        <div className="relative flex items-center flex-1 sm:flex-none min-w-32.5">
           <Filter
             size={14}
             className="absolute left-2.5 text-gray-500 pointer-events-none"
