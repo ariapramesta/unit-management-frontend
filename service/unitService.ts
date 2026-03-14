@@ -21,7 +21,7 @@ export const unitService = {
     id: string,
     status: UnitStatus,
   ): Promise<UnitData> => {
-    const response = await api.patch(`/units/${id}/status`, { status });
+    const response = await api.put(`/units/${id}`, { status });
     return response.data.data;
   },
 };
