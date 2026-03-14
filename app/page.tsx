@@ -1,6 +1,5 @@
 "use client";
 import { unitService } from "@/service/unitService";
-import { Check, ChevronDown, Filter, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import CreateUnitModal from "@/components/CreateUnitModal";
 import { UnitData, UnitStatus } from "@/types/unit";
