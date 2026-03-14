@@ -1,11 +1,8 @@
 "use client";
-import { unitService } from "@/service/unitService";
+import { unitService, UnitStatus, UnitType } from "@/service/unitService";
 import { Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
-
-type UnitType = "capsule" | "cabin";
-
-type UnitStatus = "available" | "occupied" | "cleaning" | "maintenance";
+import CreateUnitModal from "@/components/CreateUnitModal";
 
 type UnitData = {
   id: string;
@@ -18,18 +15,30 @@ export default function Home() {
   const [units, setUnits] = useState<UnitData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchUnits = async () => {
-      try {
-        const units = await unitService.getAllUnits();
-        setUnits(units.data);
-      } catch (error) {
-        console.error("Failed to get data:", error);
-      }
-    };
+  const fetchUnits = async () => {
+    try {
+      const response: any = await unitService.getAllUnits();
 
+      const finalData = Array.isArray(response) ? response : response.data;
+      if (Array.isArray(finalData)) {
+        setUnits(finalData);
+      } else {
+        console.error("Data yang diterima bukan array:", finalData);
+        setUnits([]); // Set ke array kosong agar .map tidak crash
+      }
+    } catch (error) {
+      console.error("Failed to get data:", error);
+      setUnits([]);
+    }
+  };
+
+  useEffect(() => {
     fetchUnits();
   }, []);
+
+  const handleSuccess = () => {
+    fetchUnits();
+  };
 
   const statusLabels: Record<UnitStatus, string> = {
     available: "Available",
@@ -55,6 +64,21 @@ export default function Home() {
         return "bg-rose-500";
       default:
         return "bg-gray-500";
+    }
+  };
+
+  const getStatusBorderHoverColor = (status: UnitStatus) => {
+    switch (status) {
+      case "available":
+        return "hover:border-emerald-500";
+      case "occupied":
+        return "hover:border-blue-500";
+      case "cleaning":
+        return "hover:border-amber-500";
+      case "maintenance":
+        return "hover:border-rose-500";
+      default:
+        return "hover:border-gray-500";
     }
   };
 
@@ -91,85 +115,52 @@ export default function Home() {
             </thead>
 
             <tbody className="divide-y divide-gray-100 text-gray-700 cursor-pointer">
-              {units.map((unit) => (
-                <tr
-                  key={unit.id}
-                  className="hover:bg-gray-50/50 transition-colors group"
-                >
-                  <td className="py-4 px-4 font-medium text-gray-900">
-                    {unit.name}
-                  </td>
-
-                  <td
-                    className={`text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-tighter ${getTypeStyle(unit.type)}`}
+              {units && units.length > 0 ? (
+                units.map((unit) => (
+                  <tr
+                    key={unit.id}
+                    className="hover:bg-gray-50/50 transition-colors group"
                   >
-                    {typeLabels[unit.type]}
-                  </td>
+                    <td className="py-4 px-4 font-medium text-gray-900">
+                      {unit.name}
+                    </td>
 
-                  <td className="py-4 px-4">
-                    <div className="inline-flex items-center gap-2 border border-gray-200 px-2.5 py-1 rounded-full bg-white">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(unit.status)}`}
-                      ></span>
-                      <span className="text-xs font-medium text-gray-800">
-                        {statusLabels[unit.status]}
-                      </span>
-                    </div>
+                    <td
+                      className={`text-[11px] font-bold px-3 py-1 rounded-md uppercase tracking-tighter ${getTypeStyle(unit.type)}`}
+                    >
+                      {typeLabels[unit.type]}
+                    </td>
+
+                    <td className="py-4 px-4">
+                      <div
+                        className={`inline-flex items-center gap-2 border border-gray-200 ${getStatusBorderHoverColor(unit.status)} px-2.5 py-1 rounded-full bg-white`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${getStatusDotColor(unit.status)}`}
+                        ></span>
+                        <span className="text-xs font-medium text-gray-800">
+                          {statusLabels[unit.status]}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="py-10 text-center text-gray-400">
+                    No units available.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
-        {isModalOpen && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-            {/* Backdrop (Background Blur) */}
-            <div
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-              onClick={() => setIsModalOpen(false)}
-            />
-
-            {/* Modal Box */}
-            <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 p-8 animate-in fade-in zoom-in duration-200">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Add New Unit</h2>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-black"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Form Dummy */}
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-semibold uppercase text-gray-400">
-                    Unit Name
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full border-b border-gray-200 py-2 focus:border-black outline-none transition-colors"
-                    placeholder="e.g. Capsule-B03"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold uppercase text-gray-400">
-                    Type
-                  </label>
-                  <select className="w-full border-b border-gray-200 py-2 focus:border-black outline-none bg-transparent cursor-pointer">
-                    <option>Capsule</option>
-                    <option>Cabin</option>
-                  </select>
-                </div>
-                <button className="w-full bg-black text-white py-3 rounded-xl font-medium mt-6 hover:bg-gray-800 transition-colors">
-                  Save Unit
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <CreateUnitModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={handleSuccess}
+        />
       </main>
 
       <footer></footer>
