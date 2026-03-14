@@ -42,11 +42,6 @@ export default function Home() {
     fetchUnits(statusFilter);
   };
 
-  const handleRowClick = (unit: UnitData) => {
-    setSelectedUnit(unit);
-    setIsDetailModalOpen(true);
-  };
-
   const handleDeleteClick = async (id: string) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this unit?",
