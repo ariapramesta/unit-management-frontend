@@ -30,3 +30,10 @@ export const TYPE_STYLES: Record<UnitType, string> = {
   capsule: "text-cyan-700",
   cabin: "text-green-800",
 };
+
+export const ALL_STATUSES: UnitStatus[] = [
+  "available",
+  "occupied",
+  "cleaning",
+  "maintenance",
+];

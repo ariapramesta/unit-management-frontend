@@ -1,4 +1,4 @@
-import { CreateUnitPayload, UnitData } from "@/types/unit";
+import { CreateUnitPayload, UnitData, UnitStatus } from "@/types/unit";
 import api from "./api";
 
 export const unitService = {
@@ -14,5 +14,13 @@ export const unitService = {
 
   deleteUnit: async (id: string): Promise<void> => {
     await api.delete(`/units/${id}`);
+  },
+
+  updateUnitStatus: async (
+    id: string,
+    status: UnitStatus,
+  ): Promise<UnitData> => {
+    const response = await api.patch(`/units/${id}/status`, { status });
+    return response.data.data;
   },
 };
